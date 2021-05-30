@@ -12,11 +12,11 @@ class MerchantRepository
     end
   end
 
-  # def find_by_id(id)
-  #   @all.find_all do |merchant|
-  #     merchant.id
-  #   end
-  # end
+  def find_by_id(id)
+    @all.find_all do |merchant|
+      merchant.id
+    end
+  end
 
 
 end
