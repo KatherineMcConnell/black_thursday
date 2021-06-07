@@ -202,5 +202,16 @@ class SalesAnalyst
     group_invoice_items_by_invoice_id[result.id]
   end
 
+  def top_revenue_earners(x = 20)
+    grouping = group_invoice_items_by_invoice_id
+    collection_hash = {}
+    set_all(@invoices)
+    result = grouping.each do |invoice_id, total_revenue|
+      merchant_id = find_by_merchant_id(invoice_id)
+      collection_hash[merchant_id] = 0  #total_revenue if merchant_id == invoice.merchant_id
+    end
+    require "pry"; binding.pry
+  end
+
 
 end

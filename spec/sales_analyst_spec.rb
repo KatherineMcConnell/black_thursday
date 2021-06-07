@@ -173,7 +173,7 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    xit 'returns the top x merchants ranked by revenue' do
+    it 'returns the top x merchants ranked by revenue' do
       sales_analyst = @se.analyst
       result = sales_analyst.top_revenue_earners(10)
       first = result.first
