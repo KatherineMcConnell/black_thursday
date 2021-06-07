@@ -49,6 +49,15 @@ class SalesAnalyst
     end
   end
 
+  def group_invoice_items_by_invoice_id
+    grouping = @invoice_items.all.group_by do |invoice_item|
+      invoice_item.invoice_id
+    end
+    grouping.each do |invoice_id, invoice_items|
+      grouping[invoice_id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
+    end
+  end
+
   def average_items_per_merchant
     grouping = group_items_by_merchant_id
     total = group_items_by_merchant_id.values.sum do |items_array|
@@ -184,5 +193,14 @@ class SalesAnalyst
     reset_all
     (result * 100).round(2)
   end
+
+  def total_revenue_by_date(date)
+    date = date.getgm.to_s.split(' ')[0]
+    result = @invoices.all.find do |invoice|
+      invoice.created_at.to_s.split(' ')[0]
+    end
+    group_invoice_items_by_invoice_id[result.id]
+  end
+
 
 end

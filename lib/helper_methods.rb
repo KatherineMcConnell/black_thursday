@@ -6,6 +6,12 @@ module HelperMethods
     end
   end
 
+  def find_by_merchant_id(merchant_id)
+    result = all.find do |line|
+      line.merchant_id.to_i == merchant_id.to_i
+    end
+  end
+
   def find_by_name(name)
     result = all.find do |line|
       line.name.to_s.downcase == name.to_s.downcase
