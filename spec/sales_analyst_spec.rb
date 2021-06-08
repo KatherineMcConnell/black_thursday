@@ -260,11 +260,9 @@ RSpec.describe SalesAnalyst do
       expect(result.first.class).to eq Merchant
     end
 
-    # work to refactor -- add created_at attribute to Merchant class (from csv)
     it 'returns merchants with only one invoice in given month' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_only_one_item_registered_in_month('March')
-      # result = sales_analyst.merchants_with_only_one_item_registered_in_month('January')
 
       expect(result.length).to eq 21
       expect(result.first.class).to eq Merchant
