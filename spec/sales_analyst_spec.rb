@@ -173,7 +173,7 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    it 'returns the top x merchants ranked by revenue' do
+    xit 'returns the top x merchants ranked by revenue' do
       sales_analyst = @se.analyst
       result = sales_analyst.top_revenue_earners(10)
       first = result.first
@@ -203,7 +203,7 @@ RSpec.describe SalesAnalyst do
       expect(last.id).to eq 12334159
     end
 
-    xit 'returns merchants with pending invoices' do
+    it 'returns merchants with pending invoices' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_pending_invoices
 

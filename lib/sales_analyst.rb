@@ -202,16 +202,42 @@ class SalesAnalyst
     group_invoice_items_by_invoice_id[result.id]
   end
 
-  def top_revenue_earners(x = 20)
-    grouping = group_invoice_items_by_invoice_id
-    collection_hash = {}
+  def top_revenue_earners(x=20)
+    collection_array = Array.new
     set_all(@invoices)
-    result = grouping.each do |invoice_id, total_revenue|
-      merchant_id = find_by_merchant_id(invoice_id)
-      collection_hash[merchant_id] = 0  #total_revenue if merchant_id == invoice.merchant_id
+    group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
+      collection_array << [find_by_id(invoice_id).merchant_id, total_revenue]
     end
-    require "pry"; binding.pry
+    grouping = collection_array.group_by { |invoice| invoice[0] }
+    grouping.each do |merchant_id, invoices|
+      grouping[merchant_id] = invoices.sum { |invoice| invoice[1] }
+    end
+    sorted = grouping.sort_by { |merchant, total_revenue| -total_revenue }
+    set_all(@merchants)
+    output_array = sorted[0..x-1].map do |merchant|
+      find_by_id(merchant[0])
+    end
+    # require "pry"; binding.pry
   end
 
+  def merchants_with_pending_invoices
+    # stuff
+  end
+
+  def merchants_with_only_one_item
+    # stuff
+  end
+
+  def merchants_with_only_one_item_registered_in_month(month_name)
+    # stuff
+  end
+
+  def most_sold_item_for_merchant(merchant_id)
+    # stuff
+  end
+
+  def best_item_for_merchant(merchant_id)
+    # stuff
+  end
 
 end
