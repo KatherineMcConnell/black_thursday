@@ -49,11 +49,18 @@ class SalesAnalyst
     end
   end
 
+  def group_merchants_by_created_month
+    @merchants.all.group_by do |merchant|
+      Date.parse(merchant.created_at.to_s).strftime("%B")
+    end
+  end
+
   def group_invoice_items_by_invoice_id
     grouping = @invoice_items.all.group_by do |invoice_item|
       invoice_item.invoice_id
     end
     grouping.each do |invoice_id, invoice_items|
+      # check to see if invoice.status != pending? (due to over-counting)
       grouping[invoice_id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
     end
   end
@@ -97,9 +104,9 @@ class SalesAnalyst
   def average_average_price_per_merchant
     total = 0
     group_items_by_merchant_id.each do |merchant_id, items|
-      total += (average_item_price_for_merchant(merchant_id) / 100)
+      total += (average_item_price_for_merchant(merchant_id))
     end
-    mean = (total / group_items_by_merchant_id.values.length)
+    mean = ((total / group_items_by_merchant_id.values.length).to_f).floor(2)
     # BigDecimal(mean, 4)
   end
 
@@ -230,25 +237,7 @@ class SalesAnalyst
     sorted = grouping.sort_by { |merchant, total_revenue| -total_revenue }
     set_all(@merchants)
     output_array = sorted[0..x-1].map { |merchant| find_by_id(merchant[0]) }
-    # require "pry"; binding.pry
   end
-
-  # def top_revenue_earners(x=20)
-  #   collection_array = Array.new
-  #   set_all(@invoices)
-  #   group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
-  #     merchant_id = find_by_id(invoice_id).merchant_id
-  #     total = revenue_by_merchant(merchant_id)
-  #     set_all(@invoices)
-  #     collection_array << [merchant_id, total]
-  #     # require "pry"; binding.pry
-  #   end
-  #   sorted = collection_array.uniq.sort_by { |merchant| -merchant[1] }
-  #   set_all(@merchants)
-  #   output_array = sorted[0..x-1].map { |merchant| find_by_id(merchant[0]) }
-  #   reset_all
-  #   output_array
-  # end
 
   def merchants_with_pending_invoices
     collection_arr = Array.new
@@ -275,16 +264,8 @@ class SalesAnalyst
   end
 
   def merchants_with_only_one_item_registered_in_month(month_name)
-    collection_arr = Array.new
-    group_items_by_merchant_id.each do |merchant, items|
-      if items.length == 1 && (Date.parse(items[0].created_at.to_s).strftime("%B") == month_name)
-        collection_arr << merchant
-      end
-    end
-    set_all(@merchants)
-    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
-    reset_all
-    result
+    merchants = group_merchants_by_created_month[month_name]
+    merchants_with_only_one_item.select { |merchant| merchants.index(merchant) != nil }
   end
 
   def revenue_by_merchant(merchant_id)
@@ -301,10 +282,10 @@ class SalesAnalyst
   end
 
   def most_sold_item_for_merchant(merchant_id)
-    # stuff
+    # circle back if time -- work to refactor SalesAnalyst first
   end
 
   def best_item_for_merchant(merchant_id)
-    # stuff
+    # circle back if time -- work to refactor SalesAnalyst first
   end
 end

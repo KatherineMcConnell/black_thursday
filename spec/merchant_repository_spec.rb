@@ -58,13 +58,18 @@ RSpec.describe MerchantRepository do
 
   it 'can create new instance with attributes' do
     mr = @se.merchants
-    new_merchant = {:id => mr.create_new_id, :name => 'Turing School'}
+    new_merchant = {
+      :id => mr.create_new_id,
+      :name => 'Turing School',
+      :created_at => Time.now
+    }
     mr.create(new_merchant)
     result = mr.all[-1]
 
     expect(result.class).to eq(Merchant)
     expect(result.id).to eq(12337412)
     expect(result.name).to eq('Turing School')
+    expect(result.created_at.class).to eq(Time)
   end
 
   it 'can update an existing Merchant instance name' do

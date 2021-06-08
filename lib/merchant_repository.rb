@@ -1,4 +1,5 @@
 require 'csv'
+require 'time'
 require_relative 'merchant'
 require_relative 'helper_methods'
 
@@ -27,7 +28,8 @@ class MerchantRepository
     @all << Merchant.new(
       {
         :id => create_new_id,
-        :name => attributes[:name]
+        :name => attributes[:name],
+        :created_at => attributes[:created_at]
         }, self
       )
   end
