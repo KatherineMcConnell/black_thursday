@@ -294,7 +294,7 @@ RSpec.describe SalesAnalyst do
     end
 
     # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns the most sold items for merchant' do
+    xit 'returns the best item for merchant' do
       sales_analyst = @se.analyst
       # find a merchant_id to test on
       merchant_id = nil
