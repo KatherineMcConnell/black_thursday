@@ -196,7 +196,7 @@ class SalesAnalyst
 
   def invoice_paid_in_full?(invoice_id)
     query = @transactions.find_all_by_invoice_id(invoice_id)
-    output = query.all? do |transaction|
+    output = query.any? do |transaction|
       transaction.result == :success
     end
   end
@@ -237,7 +237,16 @@ class SalesAnalyst
   end
 
   def merchants_with_pending_invoices
-    # stuff
+    collection_array = Array.new
+    @invoices.all.each do |invoice|
+      if invoice_paid_in_full?(invoice.id) != true
+        collection_array << invoice
+      end
+    end
+    set_all(@merchants)
+    result = collection_array.map { |invoice_id| find_by_id(invoice_id.merchant_id) }
+    reset_all
+    result.uniq
   end
 
   def merchants_with_only_one_item
@@ -245,14 +254,26 @@ class SalesAnalyst
     group_items_by_merchant_id.each do |merchant, items|
       collection_array << merchant if items.length == 1
     end
-    # require "pry"; binding.pry
-    # set_all(@merchants)
-    # result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
-    # reset_all
-    # result
+    set_all(@merchants)
+    result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
+    reset_all
+    result
   end
 
   def merchants_with_only_one_item_registered_in_month(month_name)
+    collection_array = Array.new
+    group_items_by_merchant_id.each do |merchant, items|
+      if items.length == 1 && (Date.parse(items[0].created_at.to_s).strftime("%B") == month_name)
+        collection_array << merchant
+      end
+    end
+    set_all(@merchants)
+    result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
+    reset_all
+    result
+  end
+
+  def revenue_by_merchant(merchant_id)
     # stuff
   end
 

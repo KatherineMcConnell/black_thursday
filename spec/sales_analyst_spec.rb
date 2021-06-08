@@ -164,7 +164,7 @@ RSpec.describe SalesAnalyst do
       @se = SalesEngine.from_csv(@paths)
     end
 
-    xit 'returns true if the invoice with the corresponding id is paid in full' do
+    it 'returns true if the invoice with the corresponding id is paid in full' do
       sales_analyst = @se.analyst
 
       result = sales_analyst.invoice_paid_in_full?(1)
@@ -242,7 +242,7 @@ RSpec.describe SalesAnalyst do
       expect(last.id).to eq 12334159
     end
 
-    xit 'returns merchants with pending invoices' do
+    it 'returns merchants with pending invoices' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_pending_invoices
 
@@ -250,7 +250,7 @@ RSpec.describe SalesAnalyst do
       expect(result.first.class).to eq Merchant
     end
 
-    xit 'returns merchants with only one item' do
+    it 'returns merchants with only one item' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_only_one_item
 
@@ -261,6 +261,7 @@ RSpec.describe SalesAnalyst do
     xit 'returns merchants with only one invoice in given month' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_only_one_item_registered_in_month('March')
+      # result = sales_analyst.merchants_with_only_one_item_registered_in_month('January')
 
       expect(result.length).to eq 21
       expect(result.first.class).to eq Merchant
@@ -298,7 +299,6 @@ RSpec.describe SalesAnalyst do
 
       # per directions, add blog post as a team to describe method
       expect(result.class).to eq Item
-      # expect(result.something).to eq something
     end
   end
 
