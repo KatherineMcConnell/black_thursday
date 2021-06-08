@@ -194,6 +194,22 @@ class SalesAnalyst
     (result * 100).round(2)
   end
 
+  def invoice_paid_in_full?(invoice_id)
+    query = @transactions.find_all_by_invoice_id(invoice_id)
+    output = query.all? do |transaction|
+      transaction.result == :success
+    end
+  end
+
+  def invoice_total(invoice_id)
+    result = @invoice_items.find_all_by_invoice_id(invoice_id)
+    invoice_total = 0
+    result.each do |invoice|
+      invoice_total += (invoice.quantity.to_i * invoice.unit_price)
+    end
+    invoice_total
+  end
+
   def total_revenue_by_date(date)
     date = date.getgm.to_s.split(' ')[0]
     result = @invoices.all.find do |invoice|
@@ -225,7 +241,15 @@ class SalesAnalyst
   end
 
   def merchants_with_only_one_item
-    # stuff
+    collection_array = Array.new
+    group_items_by_merchant_id.each do |merchant, items|
+      collection_array << merchant if items.length == 1
+    end
+    # require "pry"; binding.pry
+    # set_all(@merchants)
+    # result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
+    # reset_all
+    # result
   end
 
   def merchants_with_only_one_item_registered_in_month(month_name)
@@ -239,5 +263,4 @@ class SalesAnalyst
   def best_item_for_merchant(merchant_id)
     # stuff
   end
-
 end

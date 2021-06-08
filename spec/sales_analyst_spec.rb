@@ -151,6 +151,45 @@ RSpec.describe SalesAnalyst do
     end
   end
 
+  context 'iteration3' do
+    before :each do
+      @paths = {
+        :items => "./data/items.csv",
+        :merchants => "./data/merchants.csv",
+        :invoices => "./data/invoices.csv",
+        :invoice_items => "./data/invoice_items.csv",
+        :transactions => "./data/transactions.csv",
+        :customers => "./data/customers.csv"
+      }
+      @se = SalesEngine.from_csv(@paths)
+    end
+
+    xit 'returns true if the invoice with the corresponding id is paid in full' do
+      sales_analyst = @se.analyst
+
+      result = sales_analyst.invoice_paid_in_full?(1)
+      expect(result).to eq true
+
+      result = sales_analyst.invoice_paid_in_full?(200)
+      expect(result).to eq true
+
+      result = sales_analyst.invoice_paid_in_full?(203)
+      expect(result).to eq false
+
+      result = sales_analyst.invoice_paid_in_full?(204)
+      expect(result).to eq false
+    end
+
+    it 'returns the total amount of the invoice with the corresponding id' do
+      sales_analyst = @se.analyst
+
+      result = sales_analyst.invoice_total(1)
+
+      expect(result).to eq(21067.77)
+      expect(result.class).to eq(BigDecimal)
+    end
+  end
+
   context 'iteration4' do
     before :each do
       @paths = {
@@ -203,7 +242,7 @@ RSpec.describe SalesAnalyst do
       expect(last.id).to eq 12334159
     end
 
-    it 'returns merchants with pending invoices' do
+    xit 'returns merchants with pending invoices' do
       sales_analyst = @se.analyst
       result = sales_analyst.merchants_with_pending_invoices
 
