@@ -272,7 +272,7 @@ RSpec.describe SalesAnalyst do
       expect(result.first.class).to eq Merchant
     end
 
-    xit 'returns the revenue for given merchant' do
+    it 'returns the revenue for given merchant' do
       sales_analyst = @se.analyst
       result = sales_analyst.revenue_by_merchant(12334194)
 

@@ -211,9 +211,8 @@ class SalesAnalyst
   end
 
   def total_revenue_by_date(date)
-    date = date.getgm.to_s.split(' ')[0]
     result = @invoices.all.find do |invoice|
-      invoice.created_at.to_s.split(' ')[0]
+      invoice.created_at.to_s.split(' ')[0] == date.getgm.to_s.split(' ')[0]
     end
     group_invoice_items_by_invoice_id[result.id]
   end
@@ -230,51 +229,75 @@ class SalesAnalyst
     end
     sorted = grouping.sort_by { |merchant, total_revenue| -total_revenue }
     set_all(@merchants)
-    output_array = sorted[0..x-1].map do |merchant|
-      find_by_id(merchant[0])
-    end
+    output_array = sorted[0..x-1].map { |merchant| find_by_id(merchant[0]) }
     # require "pry"; binding.pry
   end
 
+  # def top_revenue_earners(x=20)
+  #   collection_array = Array.new
+  #   set_all(@invoices)
+  #   group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
+  #     merchant_id = find_by_id(invoice_id).merchant_id
+  #     total = revenue_by_merchant(merchant_id)
+  #     set_all(@invoices)
+  #     collection_array << [merchant_id, total]
+  #     # require "pry"; binding.pry
+  #   end
+  #   sorted = collection_array.uniq.sort_by { |merchant| -merchant[1] }
+  #   set_all(@merchants)
+  #   output_array = sorted[0..x-1].map { |merchant| find_by_id(merchant[0]) }
+  #   reset_all
+  #   output_array
+  # end
+
   def merchants_with_pending_invoices
-    collection_array = Array.new
+    collection_arr = Array.new
     @invoices.all.each do |invoice|
       if invoice_paid_in_full?(invoice.id) != true
-        collection_array << invoice
+        collection_arr << invoice
       end
     end
     set_all(@merchants)
-    result = collection_array.map { |invoice_id| find_by_id(invoice_id.merchant_id) }
+    result = collection_arr.map { |invoice_id| find_by_id(invoice_id.merchant_id) }
     reset_all
     result.uniq
   end
 
   def merchants_with_only_one_item
-    collection_array = Array.new
+    collection_arr = Array.new
     group_items_by_merchant_id.each do |merchant, items|
-      collection_array << merchant if items.length == 1
+      collection_arr << merchant if items.length == 1
     end
     set_all(@merchants)
-    result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
+    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
     reset_all
     result
   end
 
   def merchants_with_only_one_item_registered_in_month(month_name)
-    collection_array = Array.new
+    collection_arr = Array.new
     group_items_by_merchant_id.each do |merchant, items|
       if items.length == 1 && (Date.parse(items[0].created_at.to_s).strftime("%B") == month_name)
-        collection_array << merchant
+        collection_arr << merchant
       end
     end
     set_all(@merchants)
-    result = collection_array.map { |merchant_id| find_by_id(merchant_id) }
+    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
     reset_all
     result
   end
 
   def revenue_by_merchant(merchant_id)
-    # stuff
+    set_all(@merchants)
+    query = find_by_id(merchant_id).id
+    collection_arr = Array.new
+    set_all(@invoices)
+    group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
+      collection_arr << [find_by_id(invoice_id).merchant_id, total_revenue]
+    end
+    reset_all
+    grouping = collection_arr.group_by { |invoice| invoice[0] }
+    grouping[query].sum { |invoices| invoices[1] }
   end
 
   def most_sold_item_for_merchant(merchant_id)
