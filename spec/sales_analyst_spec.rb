@@ -212,7 +212,8 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
+    # Note: test passes, but is skipped by default, as a single run takes approx. 5 min..
+    #may not be able to shorten method call prior to project deadline
     xit 'returns the top x merchants ranked by revenue' do
       sales_analyst = @se.analyst
       result = sales_analyst.top_revenue_earners(10)
@@ -226,22 +227,6 @@ RSpec.describe SalesAnalyst do
 
       expect(last.class).to eq Merchant
       expect(last.id).to eq 12335747
-    end
-
-    # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns by default the top 20 merchants ranked by revenue if no argument is given' do
-      sales_analyst = @se.analyst
-      result = sales_analyst.top_revenue_earners
-      first = result.first
-      last = result.last
-
-      expect(result.length).to eq 20
-
-      expect(first.class).to eq Merchant
-      expect(first.id).to eq 12334634
-
-      expect(last.class).to eq Merchant
-      expect(last.id).to eq 12334159
     end
 
     it 'returns merchants with pending invoices' do
@@ -304,5 +289,5 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq Item
     end
   end
-  
+
 end

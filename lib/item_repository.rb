@@ -55,6 +55,20 @@ class ItemRepository
     end
   end
 
+  def avg_item_price_for_merchant(merchant_id)
+    total = group_items_by_merchant_id[merchant_id.to_s].sum { |item| item.unit_price }
+    mean = (total / (group_items_by_merchant_id[merchant_id.to_s].length))
+    BigDecimal(mean.to_f, 4)
+  end
+
+  def avg_avg_price_per_merchant
+    total = 0
+    group_items_by_merchant_id.each do |merchant_id, items|
+      total += (avg_item_price_for_merchant(merchant_id))
+    end
+    mean = ((total / group_items_by_merchant_id.values.length).to_f).floor(2)
+  end
+
   def avg_item_price_std_dev
     total = @all.sum { |item| item.unit_price }
     mean = total / @all.length

@@ -46,17 +46,11 @@ class SalesAnalyst
   end
 
   def average_item_price_for_merchant(merchant_id)
-    total = @items.group_items_by_merchant_id[merchant_id.to_s].sum { |item| item.unit_price }
-    mean = (total / (@items.group_items_by_merchant_id[merchant_id.to_s].length))
-    BigDecimal(mean.to_f, 4)
+    @items.avg_item_price_for_merchant(merchant_id)
   end
 
   def average_average_price_per_merchant
-    total = 0
-    @items.group_items_by_merchant_id.each do |merchant_id, items|
-      total += (average_item_price_for_merchant(merchant_id))
-    end
-    mean = ((total / @items.group_items_by_merchant_id.values.length).to_f).floor(2)
+    @items.avg_avg_price_per_merchant
   end
 
   def golden_items
@@ -121,18 +115,17 @@ class SalesAnalyst
   end
 
   def top_revenue_earners(x=20)
-    collection_array = Array.new
-    set_all(@invoices)
-    @invoice_items.group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
-      collection_array << [find_by_id(invoice_id).merchant_id, total_revenue]
+    @merchants.all.max_by(x) { |merchant| revenue_by_merchant(merchant.id) }
+  end
+
+  def revenue_by_merchant(merchant_id)
+    @invoices.find_all_by_merchant_id(merchant_id).sum do |invoice|
+      if @transactions.invoice_paid_in_full?(invoice.id)
+        @invoice_items.group_invoice_items_by_invoice_id[invoice.id]
+      else
+        0
+      end
     end
-    grouping = collection_array.group_by { |invoice| invoice[0] }
-    grouping.each do |merchant_id, invoices|
-      grouping[merchant_id] = invoices.sum { |invoice| invoice[1] }
-    end
-    sorted = grouping.sort_by { |merchant, total_revenue| -total_revenue }
-    set_all(@merchants)
-    output_array = sorted[0..x-1].map { |merchant| find_by_id(merchant[0]) }
   end
 
   def merchants_with_pending_invoices
@@ -162,19 +155,6 @@ class SalesAnalyst
   def merchants_with_only_one_item_registered_in_month(month_name)
     merchants = @merchants.group_merchants_by_created_month[month_name]
     merchants_with_only_one_item.select { |merchant| merchants.index(merchant) != nil }
-  end
-
-  def revenue_by_merchant(merchant_id)
-    set_all(@merchants)
-    query = find_by_id(merchant_id).id
-    collection_arr = Array.new
-    set_all(@invoices)
-    @invoice_items.group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
-      collection_arr << [find_by_id(invoice_id).merchant_id, total_revenue]
-    end
-    reset_all
-    grouping = collection_arr.group_by { |invoice| invoice[0] }
-    grouping[query].sum { |invoices| invoices[1] }
   end
 
   def most_sold_item_for_merchant(merchant_id)
