@@ -266,27 +266,23 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns the most sold items for merchant' do
+    it 'returns the most sold items for merchant' do
       sales_analyst = @se.analyst
-      # find a merchant_id to test on
-      merchant_id = nil
+      merchant_id = 12334105
       result = sales_analyst.most_sold_item_for_merchant(merchant_id)
 
-      # per directions, add blog post as a team to describe method
       expect(result.class).to eq Array
-      expect(result.class.first.class).to eq Item
+      expect(result.first.class).to eq Item
+      expect(result.first.id).to eq 263396209
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
     xit 'returns the best item for merchant' do
       sales_analyst = @se.analyst
-      # find a merchant_id to test on
-      merchant_id = nil
+      merchant_id = 12334105
       result = sales_analyst.best_item_for_merchant(merchant_id)
 
-      # per directions, add blog post as a team to describe method
       expect(result.class).to eq Item
+      # expect(result.id).to eq XXXXXXXXX
     end
   end
 

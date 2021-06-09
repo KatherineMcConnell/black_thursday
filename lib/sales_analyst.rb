@@ -3,7 +3,7 @@ require_relative 'helper_methods'
 
 class SalesAnalyst
   include HelperMethods
-  attr_reader :items, :merchants, :invoices, :invoice_items, :transactions, :customers, :engine, :all
+  attr_reader :items, :merchants, :invoices, :invoice_items, :transactions, :customers, :engine
 
   def initialize(item_repo, merchant_repo, invoice_repo, invoice_item_repo, transaction_repo, customer_repo, engine)
     @items = item_repo
@@ -13,15 +13,6 @@ class SalesAnalyst
     @transactions = transaction_repo
     @customers = customer_repo
     @engine = engine
-    @all = nil
-  end
-
-  def set_all(repo)
-    @all = repo.all
-  end
-
-  def reset_all
-    @all = nil
   end
 
   def average_items_per_merchant
@@ -30,19 +21,6 @@ class SalesAnalyst
 
   def average_items_per_merchant_standard_deviation
     @items.avg_items_per_merchant_std_dev
-  end
-
-  def merchants_with_high_item_count
-    collection_arr = []
-    @items.group_items_by_merchant_id.each do |merchant_id, items|
-      if items.length >= (average_items_per_merchant + average_items_per_merchant_standard_deviation)
-        collection_arr << merchant_id
-      end
-    end
-    set_all(@merchants)
-    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
-    reset_all
-    result
   end
 
   def average_item_price_for_merchant(merchant_id)
@@ -65,32 +43,6 @@ class SalesAnalyst
     @invoices.avg_invoices_per_merchant_std_dev
   end
 
-  def top_merchants_by_invoice_count
-    collection_arr = []
-    @invoices.group_invoices_by_merchant_id.each do |merchant_id, invoices|
-      if invoices.length >= (average_invoices_per_merchant + (average_invoices_per_merchant_standard_deviation * 2))
-        collection_arr << merchant_id
-      end
-    end
-    set_all(@merchants)
-    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
-    reset_all
-    result
-  end
-
-  def bottom_merchants_by_invoice_count
-    collection_arr = []
-    @invoices.group_invoices_by_merchant_id.each do |merchant_id, invoices|
-      if invoices.length <= (average_invoices_per_merchant - (average_invoices_per_merchant_standard_deviation * 2))
-        collection_arr << merchant_id
-      end
-    end
-    set_all(@merchants)
-    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
-    reset_all
-    result
-  end
-
   def top_days_by_invoice_count
     @invoices.top_days_by_invoice_count
   end
@@ -105,6 +57,36 @@ class SalesAnalyst
 
   def invoice_total(invoice_id)
     @invoice_items.invoice_total(invoice_id)
+  end
+
+  def merchants_with_high_item_count
+    collection_arr = []
+    @items.group_items_by_merchant_id.each do |merchant_id, items|
+      if items.length >= (average_items_per_merchant + average_items_per_merchant_standard_deviation)
+        collection_arr << merchant_id
+      end
+    end
+    collection_arr.map { |merchant_id| @merchants.find_by_id(merchant_id) }
+  end
+
+  def top_merchants_by_invoice_count
+    collection_arr = []
+    @invoices.group_invoices_by_merchant_id.each do |merchant_id, invoices|
+      if invoices.length >= (average_invoices_per_merchant + (average_invoices_per_merchant_standard_deviation * 2))
+        collection_arr << merchant_id
+      end
+    end
+    collection_arr.map { |merchant_id| @merchants.find_by_id(merchant_id) }
+  end
+
+  def bottom_merchants_by_invoice_count
+    collection_arr = []
+    @invoices.group_invoices_by_merchant_id.each do |merchant_id, invoices|
+      if invoices.length <= (average_invoices_per_merchant - (average_invoices_per_merchant_standard_deviation * 2))
+        collection_arr << merchant_id
+      end
+    end
+    collection_arr.map { |merchant_id| @merchants.find_by_id(merchant_id) }
   end
 
   def total_revenue_by_date(date)
@@ -135,10 +117,7 @@ class SalesAnalyst
         collection_arr << invoice
       end
     end
-    set_all(@merchants)
-    result = collection_arr.map { |invoice_id| find_by_id(invoice_id.merchant_id) }
-    reset_all
-    result.uniq
+    collection_arr.map { |invoice_id| @merchants.find_by_id(invoice_id.merchant_id) }.uniq
   end
 
   def merchants_with_only_one_item
@@ -146,10 +125,7 @@ class SalesAnalyst
     @items.group_items_by_merchant_id.each do |merchant, items|
       collection_arr << merchant if items.length == 1
     end
-    set_all(@merchants)
-    result = collection_arr.map { |merchant_id| find_by_id(merchant_id) }
-    reset_all
-    result
+    collection_arr.map { |merchant_id| @merchants.find_by_id(merchant_id) }
   end
 
   def merchants_with_only_one_item_registered_in_month(month_name)
@@ -158,6 +134,12 @@ class SalesAnalyst
   end
 
   def most_sold_item_for_merchant(merchant_id)
+    grouping = @invoice_items.group_invoice_items_by_item_id
+    quantity_by_item = @items.find_all_by_merchant_id(merchant_id).each_with_object(Hash.new(0)) do |item, hash|
+      hash[item.id] = grouping[item.id].sum { |invoice_item| invoice_item.quantity.to_i }
+    end
+    result = quantity_by_item.max_by { |item_id, quantity_sold| quantity_sold }
+    [@items.find_by_id(result[0])]
   end
 
   def best_item_for_merchant(merchant_id)

@@ -40,6 +40,12 @@ class InvoiceItemRepository
     end
   end
 
+  def group_invoice_items_by_item_id
+    grouping = @all.group_by do |invoice_item|
+      invoice_item.item_id
+    end
+  end
+
   def invoice_total(invoice_id)
     result = find_all_by_invoice_id(invoice_id)
     invoice_total = 0
