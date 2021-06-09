@@ -1,4 +1,5 @@
 require 'csv'
+require 'time'
 require_relative 'merchant'
 require_relative 'helper_methods'
 
@@ -23,11 +24,18 @@ class MerchantRepository
     "#<#{self.class} #{@all.size} rows>"
   end
 
+  def group_merchants_by_created_month
+    @all.group_by do |merchant|
+      Date.parse(merchant.created_at.to_s).strftime("%B")
+    end
+  end
+
   def create(attributes)
     @all << Merchant.new(
       {
         :id => create_new_id,
-        :name => attributes[:name]
+        :name => attributes[:name],
+        :created_at => attributes[:created_at]
         }, self
       )
   end

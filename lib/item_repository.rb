@@ -49,6 +49,46 @@ class ItemRepository
     end
   end
 
+  def group_items_by_merchant_id
+    @all.group_by do |item|
+      item.merchant_id
+    end
+  end
+
+  def avg_item_price_std_dev
+    total = @all.sum { |item| item.unit_price }
+    mean = total / @all.length
+    result = @all.reduce(0) do |total, item|
+      total + ((item.unit_price - mean)**2)
+    end
+    Math.sqrt(result/(@all.length - 1))
+  end
+
+  def avg_items_per_merchant
+    grouping = group_items_by_merchant_id
+    total = grouping.values.sum do |items_array|
+      items_array.length
+    end
+    (total / grouping.values.length.to_f).round(2)
+  end
+
+  def avg_items_per_merchant_std_dev
+    grouping = group_items_by_merchant_id
+    mean = avg_items_per_merchant
+    result = grouping.values.reduce(0) do |total, items|
+      total + ((items.length - mean)**2)
+    end
+    (Math.sqrt(result/(grouping.values.length.to_f - 1))).round(2)
+  end
+
+  def gldn_items
+    total = @all.sum { |item| item.unit_price }
+    mean = total / @all.length
+    @all.select do |item|
+      item.unit_price >= (mean + (avg_item_price_std_dev * 2))
+    end
+  end
+
   def create(attributes)
     @all << Item.new(
       {

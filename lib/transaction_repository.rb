@@ -36,6 +36,13 @@ class TransactionRepository
     end
   end
 
+  def invoice_paid_in_full?(invoice_id)
+    query = find_all_by_invoice_id(invoice_id)
+    output = query.any? do |transaction|
+      transaction.result == :success
+    end
+  end
+
   def create(attributes)
     @all << Transaction.new(
       {

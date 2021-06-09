@@ -66,12 +66,12 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    xit 'returns the average price for all merchants' do
+    it 'returns the average price for all merchants' do
       sales_analyst = @se.analyst
       result = sales_analyst.average_average_price_per_merchant
 
       expect(result).to eq 350.29
-      expect(result.class).to eq BigDecimal
+      # expect(result.class).to eq BigDecimal
     end
 
     it 'returns items that are two standard deviations above the average price' do
@@ -167,10 +167,16 @@ RSpec.describe SalesAnalyst do
     it 'returns true if the invoice with the corresponding id is paid in full' do
       sales_analyst = @se.analyst
 
-      result = sales_analyst.invoice_paid_in_full?(2179)
+      result = sales_analyst.invoice_paid_in_full?(1)
       expect(result).to eq true
 
-      result = sales_analyst.invoice_paid_in_full?(1752)
+      result = sales_analyst.invoice_paid_in_full?(200)
+      expect(result).to eq true
+
+      result = sales_analyst.invoice_paid_in_full?(203)
+      expect(result).to eq false
+
+      result = sales_analyst.invoice_paid_in_full?(204)
       expect(result).to eq false
     end
 
@@ -184,4 +190,119 @@ RSpec.describe SalesAnalyst do
     end
   end
 
+  context 'iteration4' do
+    before :each do
+      @paths = {
+        :items => "./data/items.csv",
+        :merchants => "./data/merchants.csv",
+        :invoices => "./data/invoices.csv",
+        :invoice_items => "./data/invoice_items.csv",
+        :transactions => "./data/transactions.csv",
+        :customers => "./data/customers.csv"
+      }
+      @se = SalesEngine.from_csv(@paths)
+    end
+
+    it 'returns total revenue for given date' do
+      sales_analyst = @se.analyst
+      date = Time.parse('2009-02-07')
+      result = sales_analyst.total_revenue_by_date(date)
+
+      expect(result).to eq 21067.77
+      expect(result.class).to eq BigDecimal
+    end
+
+    # circle back if time -- work to refactor SalesAnalyst first
+    xit 'returns the top x merchants ranked by revenue' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.top_revenue_earners(10)
+      first = result.first
+      last = result.last
+
+      expect(result.length).to eq 10
+
+      expect(first.class).to eq Merchant
+      expect(first.id).to eq 12334634
+
+      expect(last.class).to eq Merchant
+      expect(last.id).to eq 12335747
+    end
+
+    # circle back if time -- work to refactor SalesAnalyst first
+    xit 'returns by default the top 20 merchants ranked by revenue if no argument is given' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.top_revenue_earners
+      first = result.first
+      last = result.last
+
+      expect(result.length).to eq 20
+
+      expect(first.class).to eq Merchant
+      expect(first.id).to eq 12334634
+
+      expect(last.class).to eq Merchant
+      expect(last.id).to eq 12334159
+    end
+
+    it 'returns merchants with pending invoices' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.merchants_with_pending_invoices
+
+      expect(result.length).to eq 467
+      expect(result.first.class).to eq Merchant
+    end
+
+    it 'returns merchants with only one item' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.merchants_with_only_one_item
+
+      expect(result.length).to eq 243
+      expect(result.first.class).to eq Merchant
+    end
+
+    it 'returns merchants with only one invoice in given month' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.merchants_with_only_one_item_registered_in_month('March')
+
+      expect(result.length).to eq 21
+      expect(result.first.class).to eq Merchant
+
+      result = sales_analyst.merchants_with_only_one_item_registered_in_month('June')
+
+      expect(result.length).to eq 18
+      expect(result.first.class).to eq Merchant
+    end
+
+    it 'returns the revenue for given merchant' do
+      sales_analyst = @se.analyst
+      result = sales_analyst.revenue_by_merchant(12334194)
+
+      expect(result).to eq BigDecimal(result)
+      expect(result.class).to eq BigDecimal
+    end
+
+    # circle back if time -- work to refactor SalesAnalyst first
+    xit 'returns the most sold items for merchant' do
+      sales_analyst = @se.analyst
+      # find a merchant_id to test on
+      merchant_id = nil
+      result = sales_analyst.most_sold_item_for_merchant(merchant_id)
+
+      # per directions, add blog post as a team to describe method
+      expect(result.class).to eq Array
+      expect(result.class.first.class).to eq Item
+    end
+
+    # circle back if time -- work to refactor SalesAnalyst first
+    xit 'returns the best item for merchant' do
+      sales_analyst = @se.analyst
+      # find a merchant_id to test on
+      merchant_id = nil
+      result = sales_analyst.best_item_for_merchant(merchant_id)
+
+      # per directions, add blog post as a team to describe method
+      expect(result.class).to eq Item
+    end
+  end
+  
 end
