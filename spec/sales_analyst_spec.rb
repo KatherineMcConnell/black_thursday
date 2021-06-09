@@ -213,7 +213,7 @@ RSpec.describe SalesAnalyst do
     end
 
     # Note: test passes, but is skipped by default, as a single run takes approx. 5 min..
-    #may not be able to shorten method call prior to project deadline
+    #unable to shorten method call due to multiple repo analytics requirement
     xit 'returns the top x merchants ranked by revenue' do
       sales_analyst = @se.analyst
       result = sales_analyst.top_revenue_earners(10)
@@ -276,13 +276,13 @@ RSpec.describe SalesAnalyst do
       expect(result.first.id).to eq 263396209
     end
 
-    xit 'returns the best item for merchant' do
+    it 'returns the best item for merchant' do
       sales_analyst = @se.analyst
       merchant_id = 12334105
       result = sales_analyst.best_item_for_merchant(merchant_id)
 
       expect(result.class).to eq Item
-      # expect(result.id).to eq XXXXXXXXX
+      expect(result.id).to eq 263396209
     end
   end
 

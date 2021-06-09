@@ -143,5 +143,11 @@ class SalesAnalyst
   end
 
   def best_item_for_merchant(merchant_id)
+    grouping = @invoice_items.group_invoice_items_by_item_id
+    revenue_by_item = @items.find_all_by_merchant_id(merchant_id).each_with_object(Hash.new(0)) do |item, hash|
+      hash[item.id] = grouping[item.id].sum { |invoice_item| invoice_item.unit_price * invoice_item.quantity.to_i }
+    end
+    result = revenue_by_item.max_by { |item_id, total_revenue| total_revenue }
+    @items.find_by_id(result[0])
   end
 end
