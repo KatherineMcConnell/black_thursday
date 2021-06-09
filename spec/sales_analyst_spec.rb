@@ -304,5 +304,5 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq Item
     end
   end
-
+  
 end
