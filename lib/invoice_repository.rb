@@ -37,6 +37,18 @@ class InvoiceRepository
     end
   end
 
+  def group_invoices_by_merchant_id
+    @all.group_by do |invoice|
+      invoice.merchant_id
+    end
+  end
+
+  def group_invoices_by_created_date
+    @all.group_by do |invoice|
+      Date.parse(invoice.created_at.to_s).strftime("%A")
+    end
+  end
+
   def create(attributes)
     @all << Invoice.new(
       {

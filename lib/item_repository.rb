@@ -49,6 +49,12 @@ class ItemRepository
     end
   end
 
+  def group_items_by_merchant_id
+    @all.group_by do |item|
+      item.merchant_id
+    end
+  end
+
   def create(attributes)
     @all << Item.new(
       {

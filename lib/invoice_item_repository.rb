@@ -31,6 +31,15 @@ class InvoiceItemRepository
     end
   end
 
+  def group_invoice_items_by_invoice_id
+    grouping = @all.group_by do |invoice_item|
+      invoice_item.invoice_id
+    end
+    grouping.each do |invoice_id, invoice_items|
+      grouping[invoice_id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
+    end
+  end
+
   def create(attributes)
     @all << InvoiceItem.new(
       {
