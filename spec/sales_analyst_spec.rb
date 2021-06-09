@@ -212,7 +212,8 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
+    # Note: test passes, but is skipped by default, as a single run takes approx. 5 min..
+    #unable to shorten method call due to multiple repo analytics requirement
     xit 'returns the top x merchants ranked by revenue' do
       sales_analyst = @se.analyst
       result = sales_analyst.top_revenue_earners(10)
@@ -226,22 +227,6 @@ RSpec.describe SalesAnalyst do
 
       expect(last.class).to eq Merchant
       expect(last.id).to eq 12335747
-    end
-
-    # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns by default the top 20 merchants ranked by revenue if no argument is given' do
-      sales_analyst = @se.analyst
-      result = sales_analyst.top_revenue_earners
-      first = result.first
-      last = result.last
-
-      expect(result.length).to eq 20
-
-      expect(first.class).to eq Merchant
-      expect(first.id).to eq 12334634
-
-      expect(last.class).to eq Merchant
-      expect(last.id).to eq 12334159
     end
 
     it 'returns merchants with pending invoices' do
@@ -281,28 +266,24 @@ RSpec.describe SalesAnalyst do
       expect(result.class).to eq BigDecimal
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns the most sold items for merchant' do
+    it 'returns the most sold items for merchant' do
       sales_analyst = @se.analyst
-      # find a merchant_id to test on
-      merchant_id = nil
+      merchant_id = 12334105
       result = sales_analyst.most_sold_item_for_merchant(merchant_id)
 
-      # per directions, add blog post as a team to describe method
       expect(result.class).to eq Array
-      expect(result.class.first.class).to eq Item
+      expect(result.first.class).to eq Item
+      expect(result.first.id).to eq 263396209
     end
 
-    # circle back if time -- work to refactor SalesAnalyst first
-    xit 'returns the best item for merchant' do
+    it 'returns the best item for merchant' do
       sales_analyst = @se.analyst
-      # find a merchant_id to test on
-      merchant_id = nil
+      merchant_id = 12334105
       result = sales_analyst.best_item_for_merchant(merchant_id)
 
-      # per directions, add blog post as a team to describe method
       expect(result.class).to eq Item
+      expect(result.id).to eq 263396209
     end
   end
-  
+
 end

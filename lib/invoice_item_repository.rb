@@ -35,8 +35,14 @@ class InvoiceItemRepository
     grouping = @all.group_by do |invoice_item|
       invoice_item.invoice_id
     end
-    grouping.each do |invoice_id, invoice_items|
-      grouping[invoice_id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
+    grouping.transform_values do |value|
+      value.sum { |invoice_items| (invoice_items.quantity.to_f * invoice_items.unit_price) }
+    end
+  end
+
+  def group_invoice_items_by_item_id
+    grouping = @all.group_by do |invoice_item|
+      invoice_item.item_id
     end
   end
 
@@ -73,20 +79,5 @@ class InvoiceItemRepository
       @all << result
     end
   end
-
-  # # helper method -- (if needed for top_revenue_earners)
-  # def group_completed_invoice_items_by_invoice_id
-  #   grouping = @invoice_items.group_invoices_items_by_invoice_id
-  #   set_all(@invoices)
-  #   result = Hash.new
-  #   grouping.each do |invoice_id, invoice_items|
-  #     query = find_by_id(invoice_id)
-  #     # check to see if invoice.status != pending? (due to over-counting)
-  #     if query.status != :pending
-  #       result[query.id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
-  #     end
-  #   end
-  #   result
-  # end
 
 end
