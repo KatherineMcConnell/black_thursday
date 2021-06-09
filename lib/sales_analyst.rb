@@ -3,14 +3,7 @@ require_relative 'helper_methods'
 
 class SalesAnalyst
   include HelperMethods
-  attr_reader :items,
-              :merchants,
-              :invoices,
-              :invoice_items,
-              :transactions,
-              :customers,
-              :engine,
-              :all
+  attr_reader :items, :merchants, :invoices, :invoice_items, :transactions, :customers, :engine, :all
 
   def initialize(item_repo, merchant_repo, invoice_repo, invoice_item_repo, transaction_repo, customer_repo, engine)
     @items = item_repo
@@ -31,36 +24,12 @@ class SalesAnalyst
     @all = nil
   end
 
-  # # helper method -- (if needed for top_revenue_earners)
-  # def group_completed_invoice_items_by_invoice_id
-  #   grouping = @invoice_items.group_invoices_items_by_invoice_id
-  #   set_all(@invoices)
-  #   result = Hash.new
-  #   grouping.each do |invoice_id, invoice_items|
-  #     query = find_by_id(invoice_id)
-  #     # check to see if invoice.status != pending? (due to over-counting)
-  #     if query.status != :pending
-  #       result[query.id] = invoice_items.sum { |invoice_items| (invoice_items.quantity.to_i * invoice_items.unit_price) }
-  #     end
-  #   end
-  #   result
-  # end
-
   def average_items_per_merchant
-    grouping = @items.group_items_by_merchant_id
-    total = grouping.values.sum do |items_array|
-      items_array.length
-    end
-    (total / grouping.values.length.to_f).round(2)
+    @items.avg_items_per_merchant
   end
 
   def average_items_per_merchant_standard_deviation
-    grouping = @items.group_items_by_merchant_id
-    mean = average_items_per_merchant
-    result = grouping.values.reduce(0) do |total, items|
-      total + ((items.length - mean)**2)
-    end
-    (Math.sqrt(result/(grouping.values.length.to_f - 1))).round(2)
+    @items.avg_items_per_merchant_std_dev
   end
 
   def merchants_with_high_item_count
@@ -88,42 +57,18 @@ class SalesAnalyst
       total += (average_item_price_for_merchant(merchant_id))
     end
     mean = ((total / @items.group_items_by_merchant_id.values.length).to_f).floor(2)
-    # BigDecimal(mean, 4)
-  end
-
-  # helper method -- move to ItemRepo
-  def avg_item_price_std_dev
-    total = @items.all.sum { |item| item.unit_price }
-    mean = total / @items.all.length
-    result = @items.all.reduce(0) do |total, item|
-      total + ((item.unit_price - mean)**2)
-    end
-    Math.sqrt(result/(@items.all.length - 1))
   end
 
   def golden_items
-    total = @items.all.sum { |item| item.unit_price }
-    mean = total / @items.all.length
-    @items.all.select do |item|
-      item.unit_price >= (mean + (avg_item_price_std_dev * 2))
-    end
+    @items.gldn_items
   end
 
   def average_invoices_per_merchant
-    grouping = @invoices.group_invoices_by_merchant_id
-    total = grouping.values.sum do |invoices_array|
-      invoices_array.length
-    end
-    (total / grouping.values.length.to_f).round(2)
+    @invoices.avg_invoices_per_merchant
   end
 
   def average_invoices_per_merchant_standard_deviation
-    grouping = @invoices.group_invoices_by_merchant_id
-    mean = average_invoices_per_merchant
-    result = grouping.values.reduce(0) do |total, invoices|
-      total + ((invoices.length - mean)**2)
-    end
-    (Math.sqrt(result/(grouping.values.length.to_f - 1))).round(2)
+    @invoices.avg_invoices_per_merchant_std_dev
   end
 
   def top_merchants_by_invoice_count
@@ -152,53 +97,20 @@ class SalesAnalyst
     result
   end
 
-  # helper method -- move to InvoiceRepo
-  def avg_invoices_created_per_day
-    grouping = @invoices.group_invoices_by_created_date
-    total = grouping.values.sum { |invoices| invoices.length }
-    total.to_f / grouping.values.length
-  end
-
-  # helper method -- move to InvoiceRepo
-  def avg_invoices_created_per_day_std_dev
-    mean = avg_invoices_created_per_day
-    result = @invoices.group_invoices_by_created_date.values.reduce(0) do |total, invoices|
-      total + ((invoices.length - mean)**2)
-    end
-    Math.sqrt(result/(@invoices.group_invoices_by_created_date.values.length - 1))
-  end
-
   def top_days_by_invoice_count
-    collection_arr = []
-    @invoices.group_invoices_by_created_date.each do |day, invoices|
-      if invoices.length >= (avg_invoices_created_per_day + (avg_invoices_created_per_day_std_dev))
-        collection_arr << day
-      end
-    end
-    collection_arr
+    @invoices.top_days_by_invoice_count
   end
 
   def invoice_status(status)
-    set_all(@invoices)
-    result = (find_all_by_status(status).length / @invoices.all.length.to_f)
-    reset_all
-    (result * 100).round(2)
+    @invoices.invoice_status(status)
   end
 
   def invoice_paid_in_full?(invoice_id)
-    query = @transactions.find_all_by_invoice_id(invoice_id)
-    output = query.any? do |transaction|
-      transaction.result == :success
-    end
+    @transactions.invoice_paid_in_full?(invoice_id)
   end
 
   def invoice_total(invoice_id)
-    result = @invoice_items.find_all_by_invoice_id(invoice_id)
-    invoice_total = 0
-    result.each do |invoice|
-      invoice_total += (invoice.quantity.to_i * invoice.unit_price)
-    end
-    invoice_total
+    @invoice_items.invoice_total(invoice_id)
   end
 
   def total_revenue_by_date(date)
@@ -211,7 +123,6 @@ class SalesAnalyst
   def top_revenue_earners(x=20)
     collection_array = Array.new
     set_all(@invoices)
-    # group_completed_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
     @invoice_items.group_invoice_items_by_invoice_id.each do |invoice_id, total_revenue|
       collection_array << [find_by_id(invoice_id).merchant_id, total_revenue]
     end
@@ -267,10 +178,8 @@ class SalesAnalyst
   end
 
   def most_sold_item_for_merchant(merchant_id)
-    # circle back if time -- work to refactor SalesAnalyst first
   end
 
   def best_item_for_merchant(merchant_id)
-    # circle back if time -- work to refactor SalesAnalyst first
   end
 end

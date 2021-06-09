@@ -49,6 +49,52 @@ class InvoiceRepository
     end
   end
 
+  def avg_invoices_created_per_day_std_dev
+    mean = avg_invoices_created_per_day
+    result = group_invoices_by_created_date.values.reduce(0) do |total, invoices|
+      total + ((invoices.length - mean)**2)
+    end
+    Math.sqrt(result/(group_invoices_by_created_date.values.length - 1))
+  end
+
+  def avg_invoices_created_per_day
+    grouping = group_invoices_by_created_date
+    total = grouping.values.sum { |invoices| invoices.length }
+    total.to_f / grouping.values.length
+  end
+
+  def avg_invoices_per_merchant
+    grouping = group_invoices_by_merchant_id
+    total = grouping.values.sum do |invoices_array|
+      invoices_array.length
+    end
+    (total / grouping.values.length.to_f).round(2)
+  end
+
+  def avg_invoices_per_merchant_std_dev
+    grouping = group_invoices_by_merchant_id
+    mean = avg_invoices_per_merchant
+    result = grouping.values.reduce(0) do |total, invoices|
+      total + ((invoices.length - mean)**2)
+    end
+    (Math.sqrt(result/(grouping.values.length.to_f - 1))).round(2)
+  end
+
+  def top_days_by_invoice_count
+    collection_arr = []
+    group_invoices_by_created_date.each do |day, invoices|
+      if invoices.length >= (avg_invoices_created_per_day + (avg_invoices_created_per_day_std_dev))
+        collection_arr << day
+      end
+    end
+    collection_arr
+  end
+
+  def invoice_status(status)
+    result = (find_all_by_status(status).length / @all.length.to_f)
+    (result * 100).round(2)
+  end
+
   def create(attributes)
     @all << Invoice.new(
       {
