@@ -15,7 +15,9 @@ class SalesEngine
     @transaction_repo = TransactionRepository.new(paths[:transactions], self)
     @customer_repo = CustomerRepository.new(paths[:customers], self)
   end
-
+  # could've removed self (not needed)
+  #refactor initialize to only load needed repos
+  #build the minimum amount to make functionality work
   def self.from_csv(paths)
     new(paths)
   end

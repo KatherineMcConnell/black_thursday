@@ -3,18 +3,18 @@ require_relative 'spec_helper'
 
 RSpec.describe Item do
 
-  before(:each) do
-    @paths = {
-      :items => "./data/items.csv",
-      :merchants => "./data/merchants.csv",
-      :invoices => "./data/invoices.csv",
-      :invoice_items => "./data/invoice_items.csv",
-      :transactions => "./data/transactions.csv",
-      :customers => "./data/customers.csv"
-    }
-    @se = SalesEngine.from_csv(@paths)
-    @ir = @se.items
-  end
+  # before(:each) do
+  #   @paths = {
+  #     :items => "./data/items.csv",
+  #     :merchants => "./data/merchants.csv",
+  #     :invoices => "./data/invoices.csv",
+  #     :invoice_items => "./data/invoice_items.csv",
+  #     :transactions => "./data/transactions.csv",
+  #     :customers => "./data/customers.csv"
+  #   }
+  #   @se = SalesEngine.from_csv(@paths)
+  #   @ir = @se.items
+  # end
 
   it 'exists' do
     i = Item.new({
@@ -25,6 +25,8 @@ RSpec.describe Item do
     :created_at  => Time.now,
     :updated_at  => Time.now,
     :merchant_id => 2
+    # drop the repo if testing just the item (can pass in anything!!)
+    #or use a mock object for the repo!
     }, @ir)
 
     expect(i).to be_a(Item)

@@ -16,6 +16,7 @@ class ItemRepository
   end
 
   def create_items
+    # note, remove variables after debug in pry
     data = CSV.parse(File.read(@file_path), headers: true, header_converters: :symbol) do |line|
       @all << Item.new(line.to_h, self)
     end

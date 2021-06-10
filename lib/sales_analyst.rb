@@ -81,6 +81,9 @@ class SalesAnalyst
 
   def bottom_merchants_by_invoice_count
     collection_arr = []
+    # to call pry without variables:
+    #play -l 85-89
+    #set variable via `var = _` (retrieves last val from pry sesh)
     @invoices.group_invoices_by_merchant_id.each do |merchant_id, invoices|
       if invoices.length <= (average_invoices_per_merchant - (average_invoices_per_merchant_standard_deviation * 2))
         collection_arr << merchant_id
@@ -101,6 +104,8 @@ class SalesAnalyst
   end
 
   def revenue_by_merchant(merchant_id)
+    # try 'memoization':  set up an instance variable (i.e. merchant hash by invoices)
+    #this way, you only need to run this once, and can just lookup to it
     @invoices.find_all_by_merchant_id(merchant_id).sum do |invoice|
       if @transactions.invoice_paid_in_full?(invoice.id)
         @invoice_items.group_invoice_items_by_invoice_id[invoice.id]

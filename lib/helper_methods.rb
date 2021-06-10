@@ -37,7 +37,8 @@ module HelperMethods
       line.status == status
     end
   end
-
+  # should separately test methods that dont respond to ALL classes
+  #(for edge cases)
   def find_all_by_invoice_id(invoice_id)
     result = all.select do |line|
       line.invoice_id.to_i == invoice_id.to_i
